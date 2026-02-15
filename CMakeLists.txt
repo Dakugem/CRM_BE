@@ -4,24 +4,31 @@ project(crm_be VERSION 0.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(jsoncpp REQUIRED)
-
-if(NOT jsoncpp_FOUND)
-	message(FATAL_ERROR "jsoncpp not found!")
-endif()
-
 include(FetchContent)
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_OBJECT_LIBS OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(jsoncpp
+	GIT_REPOSITORY 	https://github.com/open-source-parsers/jsoncpp.git
+	GIT_TAG 1.9.5
+	SOURCE_DIR 	${CMAKE_CURRENT_SOURCE_DIR}/external/jsoncpp
+)
+set(JSONCPP_WITH_TESTS OFF CACHE BOOL "" FORCE)
+set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(jsoncpp)
 
 FetchContent_Declare(drogon
 	GIT_REPOSITORY 	https://github.com/drogonframework/drogon
+	GIT_TAG v1.9.12
 	SOURCE_DIR 	${CMAKE_CURRENT_SOURCE_DIR}/external/drogon
 )
-set(JSONCPP_LIBRARIES jsoncpp CACHE STRING "" FORCE)
+set(JSONCPP_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/lib/libjsoncpp.a CACHE STRING "" FORCE)
+set(JSONCPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/external/jsoncpp/include CACHE STRING "" FORCE)
 set(BUILD_POSTGRESQ ON CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(USE_STATIC_LIBS_ONLY ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(drogon)
 
