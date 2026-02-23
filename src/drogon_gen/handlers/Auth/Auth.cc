@@ -57,11 +57,10 @@ bool checkPassword(const std::string &password, const std::string &password_hash
     return result != nullptr && password_hash == result;
 }
 
+// curl -v -H "Authorization: Basic dXNlcjpwYXNz" -X POST http://localhost:8080/api/v1/auth/login
 void Auth::login(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
 {
     auto authHeader = req->getHeader("Authorization");
-    // Пока что в строка вида "Authorization: Basic dXNlcjpwYXNz" <- user:pass
-    // curl -v -H "Authorization: Basic dXNlcjpwYXNz" -X POST http://localhost:8080/api/v1/auth/login
     if (authHeader.empty() || authHeader.substr(0, 6) != "Basic ")
     {
         Json::Value ret;
@@ -118,6 +117,8 @@ void Auth::login(const HttpRequestPtr &req, std::function<void(const HttpRespons
     resp->setStatusCode(k200OK);
     callback(resp);
 }
+
+// curl -v -H "Content-Type: application/json" -d '{"refresh_token": "refresh_token"}' -X POST http://localhost:8080/api/v1/auth/refresh
 void Auth::refresh(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
 {
     auto json = req->getJsonObject();
@@ -165,6 +166,8 @@ void Auth::refresh(const HttpRequestPtr &req, std::function<void(const HttpRespo
     resp->setStatusCode(k200OK);
     callback(resp);
 }
+
+// curl -v -H "Authorization: Bearer a40a67029068bc23fc79addbf6c9505df7f9c1b460269c06736293fae154d548" -X POST http://localhost:8080/api/v1/auth/logout
 void Auth::logout(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
 {
     auto authHeader = req->getHeader("Authorization");
