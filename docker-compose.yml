@@ -6,15 +6,64 @@ services:
     container_name: postgres_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: myuser   
-      POSTGRES_PASSWORD: mypass  
-      POSTGRES_DB: mydb        
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypass
+      POSTGRES_DB: mydb
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  
-      - ./init:/docker-entrypoint-initdb.d/
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: golang:1.25-alpine
+    container_name: goose_migrate
+    volumes:
+      - ./migrations:/migrations:ro
+    command: >
+      sh -c "
+        apk add --no-cache goose &&
+        until pg_isready -h postgres -p 5432 -U myuser; do sleep 2; done &&
+        goose -dir /migrations postgres 'host=postgres user=myuser password=mypass dbname=mydb sslmode=disable port=5432' up &&
+        echo '✅ Seed миграции применены!'
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build: .
+    container_name: crm_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "host=postgres port=5432 user=myuser password=mypass dbname=mydb sslmode=disable"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
+      TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID:-}"
+      TELEGRAM_THREAD_ID: "${TELEGRAM_THREAD_ID:-}"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger_ui
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./openapi.yaml:/openapi.yaml:ro
+    environment:
+      SWAGGER_JSON: /openapi.yaml
 
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local

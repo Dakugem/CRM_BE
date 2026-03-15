@@ -1,0 +1,1836 @@
+openapi: 3.0.3
+info:
+  title: EBKO-CRM API
+  version: 1.0.0
+  description: REST API для системы управления обращениями EBKO-CRM
+
+servers:
+  - url: https://vk-dev.fun
+    description: Production сервер
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Числовой идентификатор ресурса
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # ── Общие ───────────────────────────────────────────────────────────────
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "employee not found"
+
+    # ── Auth ─────────────────────────────────────────────────────────────────
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: admin
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "a3f8c1d2e4b5..."
+        employee:
+          $ref: '#/components/schemas/Employee'
+
+    # ── Employee ──────────────────────────────────────────────────────────────
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "ivan.ivanov"
+        full_name:
+          type: string
+          example: "Иванов Иван Иванович"
+        email:
+          type: string
+          nullable: true
+          example: "ivan@company.ru"
+        phone:
+          type: string
+          nullable: true
+          example: "+7 900 000-00-00"
+        role:
+          type: string
+          example: "manager"
+        photo_url:
+          type: string
+          nullable: true
+          example: "/uploads/employee-1-1234567890.jpg"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EmployeeCreate:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: "ivan.ivanov"
+        password:
+          type: string
+          example: "secret123"
+        full_name:
+          type: string
+          example: "Иванов Иван Иванович"
+        email:
+          type: string
+          example: "ivan@company.ru"
+        phone:
+          type: string
+          example: "+7 900 000-00-00"
+        role:
+          type: string
+          example: "manager"
+
+    EmployeeUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        password:
+          type: string
+
+    # ── Client ────────────────────────────────────────────────────────────────
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "ООО Ромашка"
+        inn:
+          type: string
+          nullable: true
+          example: "7701234567"
+        email:
+          type: string
+          nullable: true
+          example: "info@romashka.ru"
+        phone:
+          type: string
+          nullable: true
+          example: "+7 495 000-00-00"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ClientCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: "ООО Ромашка"
+        inn:
+          type: string
+          example: "7701234567"
+        email:
+          type: string
+          example: "info@romashka.ru"
+        phone:
+          type: string
+          example: "+7 495 000-00-00"
+
+    ClientUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        inn:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    ClientRepresentative:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        client_id:
+          type: integer
+          example: 1
+        full_name:
+          type: string
+          example: "Петров Петр Петрович"
+        email:
+          type: string
+          nullable: true
+          example: "petrov@romashka.ru"
+        phone:
+          type: string
+          nullable: true
+          example: "+7 900 111-11-11"
+        position:
+          type: string
+          nullable: true
+          example: "Технический директор"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RepresentativeCreate:
+      type: object
+      required: [full_name]
+      properties:
+        full_name:
+          type: string
+          example: "Петров Петр Петрович"
+        email:
+          type: string
+          example: "petrov@romashka.ru"
+        phone:
+          type: string
+          example: "+7 900 111-11-11"
+        position:
+          type: string
+          example: "Технический директор"
+
+    RepresentativeUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        position:
+          type: string
+
+    # ── Site ─────────────────────────────────────────────────────────────────
+
+    Site:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        client_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          nullable: true
+          example: 2
+        name:
+          type: string
+          example: "Офис на Ленина"
+        address:
+          type: string
+          nullable: true
+          example: "г. Москва, ул. Ленина, д. 10"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SiteCreate:
+      type: object
+      required: [client_id, name]
+      properties:
+        client_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          nullable: true
+          example: 2
+        name:
+          type: string
+          example: "Офис на Ленина"
+        address:
+          type: string
+          example: "г. Москва, ул. Ленина, д. 10"
+
+    SiteUpdate:
+      type: object
+      properties:
+        client_id:
+          type: integer
+        product_id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+
+    SiteEquipmentItem:
+      type: object
+      properties:
+        site_id:
+          type: integer
+          example: 1
+        equipment_id:
+          type: integer
+          example: 3
+        quantity:
+          type: integer
+          example: 5
+
+    SiteEquipmentAdd:
+      type: object
+      required: [equipment_id]
+      properties:
+        equipment_id:
+          type: integer
+          example: 3
+        quantity:
+          type: integer
+          example: 5
+          default: 1
+
+    SiteEquipmentUpdate:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: integer
+          example: 10
+
+    # ── Equipment ─────────────────────────────────────────────────────────────
+
+    Equipment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          nullable: true
+          example: 1
+        name:
+          type: string
+          example: "Домофон Vizit"
+        model:
+          type: string
+          nullable: true
+          example: "БВД-405"
+        description:
+          type: string
+          nullable: true
+          example: "Видеодомофон с памятью"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EquipmentCreate:
+      type: object
+      required: [name]
+      properties:
+        product_id:
+          type: integer
+          nullable: true
+          example: 1
+        name:
+          type: string
+          example: "Домофон Vizit"
+        model:
+          type: string
+          example: "БВД-405"
+        description:
+          type: string
+          example: "Видеодомофон с памятью"
+
+    EquipmentUpdate:
+      type: object
+      properties:
+        product_id:
+          type: integer
+        name:
+          type: string
+        model:
+          type: string
+        description:
+          type: string
+
+    # ── Ticket ────────────────────────────────────────────────────────────────
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          enum: [request, complaint, incident, task]
+          example: "complaint"
+        status:
+          type: string
+          enum: [open, in_progress, pending, resolved, closed]
+          example: "open"
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          example: "high"
+        product_id:
+          type: integer
+          nullable: true
+          example: 1
+        description:
+          type: string
+          example: "Не работает домофон в подъезде №3"
+        client_id:
+          type: integer
+          nullable: true
+          example: 1
+        site_id:
+          type: integer
+          nullable: true
+          example: 2
+        responsible_id:
+          type: integer
+          nullable: true
+          example: 3
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-03-10T18:00:00Z"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TicketCreate:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [request, complaint, incident, task]
+          default: request
+        status:
+          type: string
+          enum: [open, in_progress, pending, resolved, closed]
+          default: open
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+        product_id:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          example: "Не работает домофон в подъезде №3"
+        client_id:
+          type: integer
+          nullable: true
+        site_id:
+          type: integer
+          nullable: true
+        responsible_id:
+          type: integer
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+
+    TicketUpdate:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [request, complaint, incident, task]
+        status:
+          type: string
+          enum: [open, in_progress, pending, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        product_id:
+          type: integer
+        description:
+          type: string
+        site_id:
+          type: integer
+        responsible_id:
+          type: integer
+        deadline:
+          type: string
+          format: date-time
+
+    TicketAssign:
+      type: object
+      required: [responsible_id]
+      properties:
+        responsible_id:
+          type: integer
+          example: 3
+
+    TicketComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ticket_id:
+          type: integer
+          example: 1
+        author_id:
+          type: integer
+          nullable: true
+          example: 2
+        text:
+          type: string
+          example: "Выехал на объект, разбираюсь"
+        created_at:
+          type: string
+          format: date-time
+
+    TicketCommentCreate:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          example: "Выехал на объект, разбираюсь"
+
+    TicketHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ticket_id:
+          type: integer
+          example: 1
+        author_id:
+          type: integer
+          nullable: true
+          example: 2
+        field:
+          type: string
+          example: "status"
+        old_value:
+          type: string
+          nullable: true
+          example: "open"
+        new_value:
+          type: string
+          nullable: true
+          example: "in_progress"
+        created_at:
+          type: string
+          format: date-time
+
+    TicketSubtaskAdd:
+      type: object
+      required: [ticket_id]
+      properties:
+        ticket_id:
+          type: integer
+          description: ID существующего обращения, которое станет подзадачей
+          example: 5
+
+    # ── Dashboard ─────────────────────────────────────────────────────────────
+
+    Dashboard:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        employee_id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: "Мои открытые обращения"
+        filters:
+          type: object
+          example: { "status": "open", "responsible_id": 2 }
+        position:
+          type: integer
+          example: 0
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DashboardCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: "Мои открытые обращения"
+        filters:
+          type: object
+          example: { "status": "open", "responsible_id": 2 }
+
+    DashboardUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        filters:
+          type: object
+
+    DashboardReorder:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+          description: Список ID дашбордов в нужном порядке
+          example: [3, 1, 2]
+
+    # ── References ────────────────────────────────────────────────────────────
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "МКД"
+
+    ReferenceItem:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "open"
+        label:
+          type: string
+          example: "Открыто"
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # ── Auth ───────────────────────────────────────────────────────────────────
+
+  /api/auth/login:
+    post:
+      tags: [Авторизация]
+      summary: Вход в систему
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Неверные учётные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags: [Авторизация]
+      summary: Выход из системы
+      responses:
+        '200':
+          description: Успешный выход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "logged out"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── Tickets ────────────────────────────────────────────────────────────────
+
+  /api/tickets:
+    get:
+      tags: [Обращения]
+      summary: Список обращений
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, pending, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [request, complaint, incident, task]
+        - name: client_id
+          in: query
+          schema:
+            type: integer
+        - name: responsible_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список обращений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Обращения]
+      summary: Создать обращение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreate'
+      responses:
+        '201':
+          description: Обращение создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tickets/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Обращения]
+      summary: Просмотр обращения
+      responses:
+        '200':
+          description: Обращение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Обращения]
+      summary: Редактировать обращение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdate'
+      responses:
+        '200':
+          description: Обновлённое обращение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/tickets/{id}/assign:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    patch:
+      tags: [Обращения]
+      summary: Назначить / сменить ответственного
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketAssign'
+      responses:
+        '200':
+          description: Обращение с новым ответственным
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/tickets/{id}/comments:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Обращения]
+      summary: Список комментариев обращения
+      responses:
+        '200':
+          description: Комментарии
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketComment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Обращения]
+      summary: Добавить комментарий
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCommentCreate'
+      responses:
+        '201':
+          description: Комментарий создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketComment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tickets/{id}/history:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Обращения]
+      summary: История изменений обращения
+      responses:
+        '200':
+          description: История изменений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketHistoryEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tickets/{id}/subtasks:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    post:
+      tags: [Обращения]
+      summary: Привязать обращение как подзадачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketSubtaskAdd'
+      responses:
+        '201':
+          description: Подзадача привязана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parent_id:
+                    type: integer
+                  child_id:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tickets/{id}/subtasks/{subtaskId}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: subtaskId
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      tags: [Обращения]
+      summary: Отвязать подзадачу
+      responses:
+        '204':
+          description: Подзадача отвязана
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Employees ──────────────────────────────────────────────────────────────
+
+  /api/employees:
+    get:
+      tags: [Сотрудники]
+      summary: Список сотрудников
+      responses:
+        '200':
+          description: Список сотрудников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Сотрудники]
+      summary: Создать сотрудника
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeCreate'
+      responses:
+        '201':
+          description: Сотрудник создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Пользователь с таким username уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/employees/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Сотрудники]
+      summary: Просмотр сотрудника
+      responses:
+        '200':
+          description: Сотрудник
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Сотрудники]
+      summary: Редактировать сотрудника
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpdate'
+      responses:
+        '200':
+          description: Обновлённый сотрудник
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Сотрудники]
+      summary: Удалить сотрудника
+      responses:
+        '204':
+          description: Сотрудник удалён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/employees/{id}/photo:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    patch:
+      tags: [Сотрудники]
+      summary: Загрузить / обновить фото профиля
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: Изображение (jpg, jpeg, png, gif, webp), макс. 10 МБ
+      responses:
+        '200':
+          description: Сотрудник с обновлённым фото
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Clients ────────────────────────────────────────────────────────────────
+
+  /api/clients:
+    get:
+      tags: [Клиенты]
+      summary: Список клиентов
+      responses:
+        '200':
+          description: Список клиентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Клиенты]
+      summary: Создать клиента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientCreate'
+      responses:
+        '201':
+          description: Клиент создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/clients/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Клиенты]
+      summary: Просмотр клиента
+      responses:
+        '200':
+          description: Клиент
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Клиенты]
+      summary: Редактировать клиента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientUpdate'
+      responses:
+        '200':
+          description: Обновлённый клиент
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Клиенты]
+      summary: Удалить клиента
+      responses:
+        '204':
+          description: Клиент удалён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/clients/{id}/representatives:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Клиенты]
+      summary: Список представителей клиента
+      responses:
+        '200':
+          description: Список представителей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientRepresentative'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Клиенты]
+      summary: Создать представителя клиента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepresentativeCreate'
+      responses:
+        '201':
+          description: Представитель создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRepresentative'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/clients/{id}/representatives/{repId}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: repId
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      tags: [Клиенты]
+      summary: Просмотр представителя
+      responses:
+        '200':
+          description: Представитель
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRepresentative'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Клиенты]
+      summary: Редактировать представителя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepresentativeUpdate'
+      responses:
+        '200':
+          description: Обновлённый представитель
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRepresentative'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Клиенты]
+      summary: Удалить представителя
+      responses:
+        '204':
+          description: Представитель удалён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Sites ──────────────────────────────────────────────────────────────────
+
+  /api/sites:
+    get:
+      tags: [Площадки]
+      summary: Список площадок
+      parameters:
+        - name: client_id
+          in: query
+          schema:
+            type: integer
+        - name: product_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список площадок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Площадки]
+      summary: Создать площадку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteCreate'
+      responses:
+        '201':
+          description: Площадка создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/sites/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Площадки]
+      summary: Просмотр площадки
+      responses:
+        '200':
+          description: Площадка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Площадки]
+      summary: Редактировать площадку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteUpdate'
+      responses:
+        '200':
+          description: Обновлённая площадка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Площадки]
+      summary: Удалить площадку
+      responses:
+        '204':
+          description: Площадка удалена
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/sites/{id}/equipment:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Площадки]
+      summary: Список оборудования на площадке
+      responses:
+        '200':
+          description: Оборудование площадки
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SiteEquipmentItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Площадки]
+      summary: Привязать оборудование к площадке
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteEquipmentAdd'
+      responses:
+        '201':
+          description: Оборудование привязано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteEquipmentItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/sites/{id}/equipment/{deviceId}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: deviceId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID единицы оборудования
+
+    patch:
+      tags: [Площадки]
+      summary: Изменить количество оборудования на площадке
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteEquipmentUpdate'
+      responses:
+        '200':
+          description: Обновлённая запись
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteEquipmentItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Площадки]
+      summary: Отвязать оборудование от площадки
+      responses:
+        '204':
+          description: Оборудование отвязано
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Equipment ──────────────────────────────────────────────────────────────
+
+  /api/equipment:
+    get:
+      tags: [Оборудование]
+      summary: Список единиц оборудования
+      parameters:
+        - name: product_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список оборудования
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Equipment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Оборудование]
+      summary: Создать единицу оборудования
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentCreate'
+      responses:
+        '201':
+          description: Оборудование создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/equipment/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Оборудование]
+      summary: Просмотр единицы оборудования
+      responses:
+        '200':
+          description: Оборудование
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Оборудование]
+      summary: Редактировать единицу оборудования
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentUpdate'
+      responses:
+        '200':
+          description: Обновлённое оборудование
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Equipment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Оборудование]
+      summary: Удалить единицу оборудования
+      responses:
+        '204':
+          description: Оборудование удалено
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Dashboards ─────────────────────────────────────────────────────────────
+
+  /api/dashboards:
+    get:
+      tags: [Дашборды]
+      summary: Список дашбордов текущего пользователя
+      responses:
+        '200':
+          description: Список дашбордов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Дашборды]
+      summary: Создать дашборд
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardCreate'
+      responses:
+        '201':
+          description: Дашборд создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/dashboards/reorder:
+    patch:
+      tags: [Дашборды]
+      summary: Сохранить порядок дашбордов (drag-and-drop)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardReorder'
+      responses:
+        '200':
+          description: Порядок обновлён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "reordered"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/dashboards/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+
+    get:
+      tags: [Дашборды]
+      summary: Просмотр дашборда
+      responses:
+        '200':
+          description: Дашборд
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Дашборды]
+      summary: Редактировать дашборд (название, фильтры)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardUpdate'
+      responses:
+        '200':
+          description: Обновлённый дашборд
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Дашборды]
+      summary: Удалить дашборд
+      responses:
+        '204':
+          description: Дашборд удалён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Profile ────────────────────────────────────────────────────────────────
+
+  /api/profile:
+    get:
+      tags: [Профиль]
+      summary: Просмотр своего профиля
+      responses:
+        '200':
+          description: Профиль текущего пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/profile/photo:
+    patch:
+      tags: [Профиль]
+      summary: Обновить фото профиля
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: Изображение (jpg, jpeg, png, gif, webp), макс. 10 МБ
+      responses:
+        '200':
+          description: Обновлённый профиль
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── References ─────────────────────────────────────────────────────────────
+
+  /api/references/products:
+    get:
+      tags: [Справочники]
+      summary: Список продуктов
+      responses:
+        '200':
+          description: Продукты
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/references/statuses:
+    get:
+      tags: [Справочники]
+      summary: Список статусов обращений
+      security: []
+      responses:
+        '200':
+          description: Статусы
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceItem'
+              example:
+                - name: open
+                  label: Открыто
+                - name: in_progress
+                  label: В работе
+                - name: pending
+                  label: Ожидание
+                - name: resolved
+                  label: Решено
+                - name: closed
+                  label: Закрыто
+
+  /api/references/priorities:
+    get:
+      tags: [Справочники]
+      summary: Список критичностей
+      security: []
+      responses:
+        '200':
+          description: Критичности
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceItem'
+              example:
+                - name: low
+                  label: Низкий
+                - name: medium
+                  label: Средний
+                - name: high
+                  label: Высокий
+                - name: critical
+                  label: Критический
+
+  /api/references/roles:
+    get:
+      tags: [Справочники]
+      summary: Список ролей
+      responses:
+        '200':
+          description: Роли
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+tags:
+  - name: Авторизация
+  - name: Обращения
+  - name: Сотрудники
+  - name: Клиенты
+  - name: Площадки
+  - name: Оборудование
+  - name: Дашборды
+  - name: Профиль
+  - name: Справочники

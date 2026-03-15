@@ -1,64 +1,83 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
-type Session struct {
-	ID     int64     `json:"id"`
-	Expiry time.Time `json:"expiry"`
-	User   User      `json:"user"`
-	Token  string    `json:"token,omitempty"`
+type contextKey string
+
+const sessionContextKey contextKey = "auth_session"
+
+// AuthSession представляет активную сессию пользователя
+type AuthSession struct {
+	SessionID int64
+	AccountID int64
+	RoleID    int
 }
 
-const OneWeek = time.Hour * 24 * 7
-
-var (
-	Sessions = make(map[string]*Session)
-)
-
-func GetSessionFromToken(token string) (*Session, error) {
-	session, ok := Sessions[token]
-	if !ok {
-		return nil, errors.New("session for this token does not exist")
-	}
-	return session, nil
-}
-
-func GetSessionFromRequest(r *http.Request) (*Session, error) {
-	auth := r.Header.Get("Authorization")
-	if !strings.HasPrefix(auth, "Bearer ") {
+// GetSessionFromRequest извлекает сессию из Bearer токена
+func GetSessionFromRequest(r *http.Request) (*AuthSession, error) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return nil, errors.New("missing or invalid authorization header")
 	}
-	return GetSessionFromToken(strings.TrimPrefix(auth, "Bearer "))
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	accessTokenHash := sha256Hash(accessToken)
+
+	// Получаем сессию из БД
+	session, err := getSessionByAccessToken(accessTokenHash)
+	if err != nil {
+		return nil, err
+	}
+	if session == nil {
+		return nil, errors.New("session not found or expired")
+	}
+
+	// Получаем информацию об аккаунте
+	var roleID int
+	err = db.QueryRow(`
+		SELECT role_id
+		FROM auth."Accounts"
+		WHERE id = $1
+	`, session.AccountID).Scan(&roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Обновляем время последнего использования сессии (в фоне)
+	go func() {
+		if err := updateSessionLastUsed(session.ID); err != nil {
+			log.Printf("Failed to update session last_used_at: %v", err)
+		}
+	}()
+
+	return &AuthSession{
+		SessionID: session.ID,
+		AccountID: session.AccountID,
+		RoleID:    roleID,
+	}, nil
 }
 
+// RequireAuth - middleware для проверки аутентификации
 func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := GetSessionFromRequest(r)
+		session, err := GetSessionFromRequest(r)
 		if err != nil {
-			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			writeError(w, http.StatusUnauthorized, "unauthorized")
 			return
 		}
-		next(w, r)
+		ctx := context.WithValue(r.Context(), sessionContextKey, session)
+		next(w, r.WithContext(ctx))
 	}
 }
 
-func SendSessionTokenJSON(w http.ResponseWriter, token string) error {
-	w.Header().Set("Content-Type", "application/json")
-
-	response := struct {
-		Token string `json:"token"`
-	}{Token: token}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Println("failed send session token")
-		return errors.New("failed send session token")
-	}
-	return nil
+// SessionFromContext извлекает сессию из контекста
+func SessionFromContext(ctx context.Context) *AuthSession {
+	s, _ := ctx.Value(sessionContextKey).(*AuthSession)
+	return s
 }
